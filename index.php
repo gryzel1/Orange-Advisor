@@ -41,6 +41,7 @@ if (!$_SESSION["cuid"]) {
     <link href="bulma-badge/dist/css/bulma-badge.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
     <link href="https://use.fontawesome.com/releases/v5.0.1/css/all.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/leaflet.extra-markers.min.css">
     <!-- CSS -->
 
     <!-- fonts -->
@@ -58,6 +59,7 @@ if (!$_SESSION["cuid"]) {
     <!-- JS -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script src="js/leaflet.extra-markers.min.js"></script>
     <script src="js/main.js"></script>
     <!-- JS -->
   </head>
@@ -86,6 +88,8 @@ if (!$_SESSION["cuid"]) {
     <div id="map"></div>
     <script src="js/map.js"></script>
     <?php
+      echo "<script> var popups = []</script>";
+
       $queryResto = $db->query("SELECT * FROM resto");
       while($rowResto = $queryResto->fetch_assoc()){
         $nom = $rowResto['nom'];
@@ -104,12 +108,13 @@ if (!$_SESSION["cuid"]) {
         if ($moy!="" && $plat=="") {$sep="";}else{$sep=" - ";}
         if ($moy=="") {$etoile="";$sep="";}else {$etoile="&#9733";}
         $queryNum = $db->query('SELECT COUNT(*) FROM reservation where date like "'.$date.'" and id like '.$id);
-        echo "<script>var popup = L.popup({
+        echo "<script>var popup".$id." = L.popup({
           closeButton:false,
           autoClose:false,
           closeOnEscapeKey:false,
           closeOnClick:false,
-          minWidth:100
+          minWidth:100,
+          autoPan:false
         })  .setLatLng(L.latLng(".$x.",".$y."))";
         $rowNum = $queryNum->fetch_assoc();
         $num = $rowNum['COUNT(*)'];
@@ -119,12 +124,21 @@ if (!$_SESSION["cuid"]) {
           $inscrits=$num." inscrits";
         }
         if ($num) {
-          echo ".setContent('<a id=\"select".$id."\" style=\"display:inline-flex;text-align:center;color: #f16e00;\"><i class=\"fas fa-utensils\"></i>&nbsp;&nbsp;".$nom."<br>".$plat.$€.$sep.$moy.$etoile."</a><p data-badge=\"".$inscrits."\" class=\"has-badge-rounded has-badge-orange\"></p>')
-              .openOn(map);</script>";
+          echo ".setContent('<a class=\"select".$id."\" style=\"display:inline-flex;text-align:center;color: #f16e00;\"><i class=\"fas fa-utensils\"></i>&nbsp;&nbsp;".$nom."<br>".$plat.$€.$sep.$moy.$etoile."</a><p data-badge=\"".$inscrits."\" class=\"has-badge-rounded has-badge-orange\"></p>')
+              ;popups.push(popup".$id.");</script>";
         }else {
-          echo ".setContent('<a id=\"select".$id."\" style=\"display:inline-flex;text-align:center;color: #f16e00;\"><i class=\"fas fa-utensils\"></i>&nbsp;&nbsp;".$nom."<br>".$plat.$€.$sep.$moy.$etoile."</a>')
-              .openOn(map);</script>";
+          echo ".setContent('<a class=\"select".$id."\" style=\"display:inline-flex;text-align:center;color: #f16e00;\"><i class=\"fas fa-utensils\"></i>&nbsp;&nbsp;".$nom."<br>".$plat.$€.$sep.$moy.$etoile."</a>')
+              ;popups.push(popup".$id.");</script>";
         }
+        echo "<script>var orangeMarker = L.ExtraMarkers.icon({
+            icon: 'fa-utensils',
+            markerColor: '#f16e00',
+            svg: 'true',
+            shape: 'circle',
+            prefix: 'fas'
+          });
+          var marker".$id." = L.marker([".$x.", ".$y."], {icon: orangeMarker}).addTo(map);
+          marker".$id.".bindPopup(popup".$id.");</script>";
         $nom = str_replace("\'","'",$nom);
         echo '<div id="restoDesc'.$id.'" class="modal">
              <!-- Modal content -->
@@ -256,9 +270,14 @@ if (!$_SESSION["cuid"]) {
           var span'.$id.' = document.getElementById("close'.$id.'");
 
           // When the user clicks on the button, open the modal
-          btn'.$id.'.onclick = function() {
+          // btn'.$id.'.onclick = function() {
+          //   modal'.$id.'.style.display = "block";
+          // }
+
+          jQuery("body").on("click","a.select'.$id.'", function(e){
+            e.preventDefault();
             modal'.$id.'.style.display = "block";
-          }
+          });
 
           // When the user clicks on <span> (x), close the modal
           span'.$id.'.onclick = function() {
