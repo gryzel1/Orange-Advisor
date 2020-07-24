@@ -5,6 +5,10 @@ if (!$_SESSION["cuid"]) {
   header('Location: login.php');
 }
 
+if (!$_SESSION["cuid"]=="test0000") {
+  header('Location: index.php');
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -13,6 +17,7 @@ if (!$_SESSION["cuid"]) {
   <!-- head -->
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,width=device-width">
     <title> Orange Advisor - Liste</title>
 
     <!-- CSS -->
@@ -45,7 +50,7 @@ if (!$_SESSION["cuid"]) {
         <div class="is-header">
           <div class="columns">
             <div class="column">
-              <p class="advisor"><img src="img/logo.png" alt="Orange" style="width:50px;margin-top:15px"> Advisor</p>
+              <p class="advisor"><img src="img/logo.png" alt="Orange" style="width:50px;margin-top:15px"> Advisor </a><a href="index.php" class="is-hidden-desktop" style="color:white;font-size:20px"><i class="fas fa-home"></i></a></p>
             </div>
             <div class="column button-column">
               <br>
@@ -66,6 +71,7 @@ if (!$_SESSION["cuid"]) {
           $x = $rowResto['x'];
           $y = $rowResto['y'];
           $plat = $rowResto['plat'];
+          $tel = $rowResto['tel'];
           $nom = str_replace("\'","'",$nom);
           if ($commune=="") {
             $commune = "Non défini";
@@ -75,7 +81,12 @@ if (!$_SESSION["cuid"]) {
           }else {
             $plat .= "€";
           }
-          echo '<div class="box" style="width:75%;margin:auto;margin-top:15px;">
+          if($tel){
+            $telStr=' &nbsp;&nbsp;/&nbsp;&nbsp; <span class="orange-color"><i class="fa fa-phone"></i></span>&nbsp;&nbsp;'.$tel;
+          }else{
+            $telStr=' &nbsp;&nbsp;/&nbsp;&nbsp; <span class="orange-color"><i class="fa fa-phone"></i></span>&nbsp;&nbsp; Non défini';
+          }
+          echo '<div class="box is-hidden-touch" style="width:75%;margin:auto;margin-top:15px;">
             <article class="media">
               <div class="media-content">
                 <div class="content">
@@ -84,7 +95,25 @@ if (!$_SESSION["cuid"]) {
                     <span style="float:right;margin-right:10px;"><a id="select'.$id.'" class="button is-success is-modify"><i class="fas fa-pen"></i></a></span>
                     <strong>'.$nom.'</strong>
                     <br>
-                    <span class="orange-color"><i class="fas fa-city"></i></span>&nbsp;&nbsp;'.$commune.' &nbsp;&nbsp;/ &nbsp;&nbsp;<span class="orange-color"><i class="fas fa-map-pin"></i></span>&nbsp;&nbsp;<strong>Longitude :</strong> '.$x.' - <strong>Latitude :</strong> '.$y.' &nbsp;&nbsp;/&nbsp;&nbsp; <span class="orange-color"><i class="fas fa-money-bill-wave"></i></span>&nbsp;&nbsp;'.$plat.'
+                    <span class="orange-color"><i class="fas fa-city"></i></span>&nbsp;&nbsp;'.$commune.' &nbsp;&nbsp;/ &nbsp;&nbsp;<span class="orange-color"><i class="fas fa-map-pin"></i></span>&nbsp;&nbsp;<strong>Longitude :</strong> '.$x.' - <strong>Latitude :</strong> '.$y.' &nbsp;&nbsp;/&nbsp;&nbsp; <span class="orange-color"><i class="fas fa-money-bill-wave"></i></span>&nbsp;&nbsp;'.$plat.$telStr.'
+                  </p>
+                </div>
+              </div>
+            </article>
+          </div>';
+
+          $telStr=substr($telStr,26);
+
+          echo '<div class="box is-hidden-desktop" style="width:90%;margin:auto;margin-top:15px;">
+            <article class="media">
+              <div class="media-content">
+                <div class="content">
+                  <p>
+                    <span style="float:right"><a href="delResto.php/?id='.$id.'" class="button is-success is-modify"><i class="fas fa-trash-alt"></i></a></span>
+                    <span style="float:right;margin-right:10px;"><a id="select'.$id.'Mobile" class="button is-success is-modify"><i class="fas fa-pen"></i></a></span>
+                    <strong>'.$nom.'</strong>
+                    <br><br>
+                    <span class="orange-color"><i class="fas fa-city"></i></span>&nbsp;&nbsp;'.$commune.'<br><span class="orange-color"><i class="fas fa-map-pin"></i></span>&nbsp;&nbsp;<strong>Longitude :</strong> '.$x.' - <strong>Latitude :</strong> '.$y.'<br><span class="orange-color"><i class="fas fa-money-bill-wave"></i></span>&nbsp;&nbsp;'.$plat.'<br>'.$telStr.'
                   </p>
                 </div>
               </div>
@@ -105,7 +134,7 @@ if (!$_SESSION["cuid"]) {
                   <p><i class="fas fa-utensils"></i>&nbsp;&nbsp;'.$nom.' - '.$commune.'</p>
                  </div>
                  <form id="form'.$id.'" method="post" onsubmit="return false" action="modResto.php">
-                   <div class="columns">
+                   <div class="columns" style="margin:auto">
                      <div class="column">
                        <div class="field">
                         <label style="margin-top:15px" class="label">Nom*</label>
@@ -119,12 +148,12 @@ if (!$_SESSION["cuid"]) {
                          <input id="plat'.$id.'" class="input" type="text" placeholder="Prix du plat du jour" tabindex="3" name="plat" value="'.$plat.'">
                        </div>
                      </div>
-                     <div class="field">
-                      <label class="label">Latitude*</label>
-                      <div class="control">
-                        <input id="y'.$id.'" class="input" type="text" placeholder="y" tabindex="5" name="y" value="'.$y.'">
-                      </div>
-                    </div>
+                    <div class="field">
+                     <label class="label">Longitude*</label>
+                     <div class="control">
+                       <input id="x'.$id.'" class="input" type="text" placeholder="x" tabindex="5" name="x" value="'.$x.'">
+                     </div>
+                   </div>
                      </div>
                      <div class="column">
                        <div class="field">
@@ -134,19 +163,24 @@ if (!$_SESSION["cuid"]) {
                         </div>
                       </div>
                       <div class="field">
-                       <label class="label">Longitude*</label>
+                       <label class="label">Téléphone</label>
                        <div class="control">
-                         <input id="x'.$id.'" class="input" type="text" placeholder="x" tabindex="4" name="x" value="'.$x.'">
+                         <input id="tel'.$id.'" class="input" type="text" placeholder="** ** ** ** **" tabindex="4" name="tel" value="'.$tel.'">
                        </div>
                      </div>
-                     <div class="field is-grouped" style="display:block;margin:auto">
+                     <div class="field">
+                      <label class="label">Latitude*</label>
                       <div class="control">
-                      <input type="hidden" name="id" value="'.$id.'">
-                        <label class="label">Valider</label>
-                        <button id="submit-button'.$id.'" type="submit" name="submit" class="button is-link is-orange"><i class="fas fa-pen"></i>&nbsp;&nbsp;Modifier le restaurant</button>
+                        <input id="y'.$id.'" class="input" type="text" placeholder="y" tabindex="6" name="y" value="'.$y.'">
                       </div>
-                     </div>
+                    </div>
                    </div>
+                 </div>
+                 <div class="field is-grouped" style="display:block;margin:auto;margin-top:20px">
+                  <div class="control">
+                  <input type="hidden" name="id" value="'.$id.'">
+                    <button id="submit-button'.$id.'" type="submit" name="submit" class="button is-link is-orange"><i class="fas fa-pen"></i>&nbsp;&nbsp;Modifier le restaurant</button>
+                  </div>
                  </div>
                  </form>
                </div>
@@ -156,12 +190,16 @@ if (!$_SESSION["cuid"]) {
 
             // Get the button that opens the modal
             var btn'.$id.' = document.getElementById("select'.$id.'");
+            var btn'.$id.'Mobile = document.getElementById("select'.$id.'Mobile");
 
             // Get the <span> element that closes the modal
             var span'.$id.' = document.getElementById("close'.$id.'");
 
             // When the user clicks on the button, open the modal
             btn'.$id.'.onclick = function() {
+              modal'.$id.'.style.display = "block";
+            }
+            btn'.$id.'Mobile.onclick = function() {
               modal'.$id.'.style.display = "block";
             }
 
@@ -174,6 +212,7 @@ if (!$_SESSION["cuid"]) {
             var nom'.$id.' = document.getElementById("nom'.$id.'");
             var commune'.$id.' = document.getElementById("commune'.$id.'");
             var plat'.$id.' = document.getElementById("plat'.$id.'");
+            var tel'.$id.' = document.getElementById("tel'.$id.'");
             var x'.$id.' = document.getElementById("x'.$id.'");
             var y'.$id.' = document.getElementById("y'.$id.'");
             var form'.$id.' = document.getElementById("form'.$id.'");
@@ -213,6 +252,21 @@ if (!$_SESSION["cuid"]) {
                 plat'.$id.'.className="input is-success";
               }else{
                 plat'.$id.'.className="input is-danger";
+                check'.$id.'=false;
+              }
+
+              if(tel'.$id.'.value=="") {
+                tel'.$id.'.className="input is-warning";
+              }else if(parseFloat(tel'.$id.'.value)){
+                tel'.$id.'WithoutSpace = tel'.$id.'.value.replace(/\s+/g, "");
+                if(tel'.$id.'WithoutSpace.length==10){
+                  tel'.$id.'.className="input is-success";
+                }else{
+                  tel'.$id.'.className="input is-danger";
+                  check'.$id.'=false;
+                }
+              }else{
+                tel'.$id.'.className="input is-danger";
                 check'.$id.'=false;
               }
 

@@ -39,6 +39,7 @@ if(isset($_POST['nom'])){
   $nom = $_POST['nom'];
   $commune = $_POST['commune'];
   $plat = $_POST['plat'];
+  $tel = $_POST['tel'];
   $x = $_POST['x'];
   $y = $_POST['y'];
   $id = $_POST['id'];
@@ -51,21 +52,22 @@ if ($commune=="") {
 }
 
 if ($plat=="") {
-  $plat=null;
+  $plat="NULL";
 }
 
 $plat = str_replace (",", ".", $plat);
+$tel = str_replace (" ", "", $tel);
 $x = str_replace (",", ".", $x);
 $y = str_replace (",", ".", $y);
 
-if (!$commune&&!$plat) {
-  $db->query('update resto set nom="'.$nom.'",x="'.$x.'",y="'.$y.'",commune=NULL,plat=NULL where id like "'.$id.'"');
-}elseif (!$plat) {
-  $db->query('update resto set nom="'.$nom.'",x="'.$x.'",y="'.$y.'",commune="'.$commune.'",plat=NULL where id like "'.$id.'"');
-}elseif (!$commune) {
-  $db->query('update resto set nom="'.$nom.'",x="'.$x.'",y="'.$y.'",commune=NULL,plat="'.$plat.'" where id like "'.$id.'"');
-}else {
-  $db->query('update resto set nom="'.$nom.'",x="'.$x.'",y="'.$y.'",commune="'.$commune.'",plat="'.$plat.'" where id like "'.$id.'"');
+if($commune&&$tel){
+  $db->query('update resto set nom="'.$nom.'",x="'.$x.'",y="'.$y.'",commune="'.$commune.'",plat='.$plat.',tel="'.$tel.'" where id like "'.$id.'"');
+}else if(!$commune&&$tel){
+  $db->query('update resto set nom="'.$nom.'",x="'.$x.'",y="'.$y.'",commune=NULL,plat='.$plat.',tel="'.$tel.'" where id like "'.$id.'"');
+}elseif($commune&&!$tel){
+  $db->query('update resto set nom="'.$nom.'",x="'.$x.'",y="'.$y.'",commune="'.$commune.'",plat='.$plat.',tel=NULL where id like "'.$id.'"');
+}else{
+  $db->query('update resto set nom="'.$nom.'",x="'.$x.'",y="'.$y.'",commune="NULL",plat='.$plat.',tel="NULL" where id like "'.$id.'"');
 }
 
 header('Location: modify.php');

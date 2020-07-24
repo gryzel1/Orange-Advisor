@@ -1,11 +1,12 @@
 <?php require_once('include/db.php'); ?>
 
 <!DOCTYPE html>
-<html lang="fr" style="overflow-y: hidden;">
+<html lang="fr">
 
   <!-- head -->
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,width=device-width">
     <title> Orange Advisor - Login</title>
 
     <!-- CSS -->
@@ -40,7 +41,7 @@
             <div class="columns is-centered">
               <div class="column is-5-tablet is-4-desktop is-3-widescreen">
                 <form action="index.php" class="box" method="post">
-                  <label class="label is-large" style="text-align:center;">Advisor</label>
+                  <label class="label is-large" style="text-align:center;"><img src="img/icon.png" alt="Orange SA" style="width:30px;">&nbsp;&nbsp;Advisor</label>
                   <div class="field">
                     <label for="" class="label">Identifiant CUID</label>
                     <div class="control has-icons-left">
@@ -65,6 +66,14 @@
                     </button>
                   </div>
                 </form>
+                <div class="columns">
+                  <div class="column">
+                    <a href="testAccount.php" class="button is-dark" style="width:100%"><i class="fas fa-user-tag"></i>&nbsp;Session invité</a>
+                  </div>
+                  <div class="column">
+                    <a href="https://grisel.eu" class="button is-dark" style="width:100%"><i class="fas fa-file-code"></i>&nbsp;Développeur</a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

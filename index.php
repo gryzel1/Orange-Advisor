@@ -20,6 +20,11 @@ if(isset($_POST['cuid'])){
   }
 }
 
+if($_SESSION["cuid"]=="test0000"){
+  $prenom = "Invité";
+  $_SESSION["prenom"]=$prenom;
+}
+
 if (!$_SESSION["cuid"]) {
   header('Location: login.php');
 }
@@ -42,6 +47,8 @@ if (!$_SESSION["cuid"]) {
     <link rel="stylesheet" href="css/main.css">
     <link href="https://use.fontawesome.com/releases/v5.0.1/css/all.css" rel="stylesheet">
     <link rel="stylesheet" href="css/leaflet.extra-markers.min.css">
+    <link rel="stylesheet" href="css/MarkerCluster.css">
+    <link rel="stylesheet" href="css/MarkerCluster.Default.css">
     <!-- CSS -->
 
     <!-- fonts -->
@@ -60,6 +67,7 @@ if (!$_SESSION["cuid"]) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
     <script src="js/leaflet.extra-markers.min.js"></script>
+    <script src="js/leaflet.markercluster-src.js"></script>
     <script src="js/main.js"></script>
     <!-- JS -->
   </head>
@@ -70,14 +78,18 @@ if (!$_SESSION["cuid"]) {
         <div class="is-header">
           <div class="columns">
             <div class="column">
-              <p class="advisor"><img src="img/logo.png" alt="Orange" style="width:50px;margin-top:15px"> Advisor</p>
+              <p class="advisor"><img src="img/logo.png" alt="Orange" style="width:50px;margin-top:15px"> Advisor <?php if($_SESSION["cuid"]!="test0000")echo '<a id="addButtonMobile" class="is-hidden-desktop" style="color:white;font-size:20px;"><i class="fas fa-plus-square"></i></a><a href="modify.php" class="is-hidden-desktop" style="color:white;font-size:20px;margin-left:5px"><i class="fas fa-pen-square"></i></a>'; ?></p>
               <p class="prenom"><span class="bjr">Bonjour </span><?php echo $_SESSION["prenom"]; ?> <a href="disconnect.php" style="color:white"><i class="fas fa-sign-out-alt"></i></a></p>
             </div>
             <div class="column button-column">
               <br>
-              <a id="addButton" class="orange-button is-hidden-touch" href="#"><i class="fas fa-plus"></i>&nbsp;&nbsp;Ajouter un restaurant</a>
-              <br><br>
-              <a class="orange-button is-hidden-touch" href="modify.php"><i class="fas fa-pen"></i>&nbsp;&nbsp;Modifier la liste</a>
+              <?php
+              if($_SESSION["cuid"]!="test0000"){
+                echo '<a id="addButton" class="orange-button is-hidden-touch" href="#"><i class="fas fa-plus"></i>&nbsp;&nbsp;Ajouter un restaurant</a>
+                <br><br>
+                <a class="orange-button is-hidden-touch" href="modify.php"><i class="fas fa-pen"></i>&nbsp;&nbsp;Modifier la liste</a>';
+              }
+               ?>
             </div>
           </div>
 
@@ -88,7 +100,18 @@ if (!$_SESSION["cuid"]) {
     <div id="map"></div>
     <script src="js/map.js"></script>
     <?php
-      echo "<script> var popups = []</script>";
+      echo "<script> var popups = [];
+      var markersCluster = new L.MarkerClusterGroup({
+        maxClusterRadius:40,
+        iconCreateFunction: function(cluster) {
+        return L.divIcon({
+            html: cluster.getChildCount(),
+            className: 'cluster',
+            iconSize: null
+        });
+    }
+      });
+      map.addLayer(markersCluster);</script>";
 
       $queryResto = $db->query("SELECT * FROM resto");
       while($rowResto = $queryResto->fetch_assoc()){
@@ -101,6 +124,7 @@ if (!$_SESSION["cuid"]) {
         $x = $rowResto['x'];
         $y = $rowResto['y'];
         $plat = $rowResto['plat'];
+        $tel = $rowResto['tel'];
         $id = $rowResto['id'];
         $commune = $rowResto['commune'];
 
@@ -137,8 +161,9 @@ if (!$_SESSION["cuid"]) {
             shape: 'circle',
             prefix: 'fas'
           });
-          var marker".$id." = L.marker([".$x.", ".$y."], {icon: orangeMarker}).addTo(map);
-          marker".$id.".bindPopup(popup".$id.");</script>";
+          var marker".$id." = L.marker([".$x.", ".$y."], {icon: orangeMarker});
+          marker".$id.".bindPopup(popup".$id.");
+          markersCluster.addLayer(marker".$id.");</script>";
         $nom = str_replace("\'","'",$nom);
         echo '<div id="restoDesc'.$id.'" class="modal">
              <!-- Modal content -->
@@ -151,7 +176,7 @@ if (!$_SESSION["cuid"]) {
                  <article class="media">
                    <div class="media-content">
                      <div class="content">
-                       <p>
+                       <p style="text-align:center">
                          <strong>Qui mange ici ce midi ?</strong>
                          <br>
                           <table class=" table is-striped is-bordered">';
@@ -180,9 +205,9 @@ if (!$_SESSION["cuid"]) {
                            <div class="control" style="display:block;margin:auto">';
                           $queryPresent = $db->query('SELECT * FROM reservation where date like "'.$date.'" and id = '.$id.' and cuid like "'.$_SESSION["cuid"].'"');
                           $rowPresent = $queryPresent->fetch_assoc();
-                          if(!$rowPresent){
+                          if(!$rowPresent&&$_SESSION["cuid"]!="test0000"){
                             echo '<a id="joinResto'.$id.'" href="joinResto.php/?id='.$id.'" style="padding-right:10px;padding-left:10px;" class="button is-link is-orange"><i class="fas fa-utensils"></i>&nbsp;&nbsp;Manger ici</a>';
-                          }else {
+                          }else if($_SESSION["cuid"]!="test0000"){
                             echo '<a id="leaveResto'.$id.'" href="leaveResto.php/?id='.$id.'" style="padding-right:10px;padding-left:10px;" class="button is-link is-orange"><i class="fas fa-times"></i>&nbsp;&nbsp;Ne plus manger ici</a>';
                           }
                           echo '</div>
@@ -201,37 +226,40 @@ if (!$_SESSION["cuid"]) {
                          <br>
                            <div class="field is-grouped">
                             <div class="control" style="display:block;margin:auto">
-                              <a href="geo:'.$x.','.$y.'" style="padding-right:10px;padding-left:10px;" class="button is-link is-orange"><i class="fa fa-map-marker"></i>&nbsp;&nbsp;Se rendre sur place</a>
-                            </div>
+                              <a href="geo:'.$x.','.$y.'" style="padding-right:10px;padding-left:10px;" class="button is-link is-orange"><i class="fa fa-map-marker"></i>&nbsp;&nbsp;Se rendre sur place</a>';
+                              if($tel)echo '<a href="tel:'.$tel.'" style="padding-right:10px;padding-left:10px;margin-top:10px" class="button is-link is-orange"><i class="fa fa-phone"></i>&nbsp;&nbsp;Réserver</a>';
+                            echo '</div>
                            </div>
                        </p>
                      </div>
                    </div>
                  </article>
-               </div>
-               <form id="form" method="post" onsubmit="<!--return false-->" action="addRating.php">
-               <div class="box" style="width:100%;margin:auto;margin-top:15px;">
-                 <article class="media">
-                   <div class="media-content">
-                     <div class="content" style="text-align:center">
-                       <p><h1 style="margin-top:0;">Donnez-nous votre avis.</h1>
-                       <br>
-                         <x-star-rating style="text-align:center;margin-top:0" class="star" value="0" number="5"></x-star-rating>
+               </div>';
+               if($_SESSION["cuid"]!="test0000"){
+                 echo '<form id="form" method="post" onsubmit="<!--return false-->" action="addRating.php">
+                 <div class="box" style="width:100%;margin:auto;margin-top:15px;">
+                   <article class="media">
+                     <div class="media-content">
+                       <div class="content" style="text-align:center">
+                         <p><h1 style="margin-top:0;">Donnez-nous votre avis.</h1>
                          <br>
-                         <input id="commentaire" class="input" type="text" placeholder="Commentaire" tabindex="1" name="commentaire">
-                       </p>
+                           <x-star-rating style="text-align:center;margin-top:0" class="star" value="0" number="5"></x-star-rating>
+                           <br>
+                           <input id="commentaire" class="input" type="text" placeholder="Commentaire" tabindex="1" name="commentaire">
+                         </p>
+                       </div>
                      </div>
-                   </div>
-                 </article>
-               </div>
-                <input class="star-input" type="hidden" name="stars"></input>
-                <input type="hidden" name="nom" value="'.$nom.'"></input>
-                <input type="submit" style="display: none;" />
-               </form>';
+                   </article>
+                 </div>
+                  <input class="star-input" type="hidden" name="stars"></input>
+                  <input type="hidden" name="nom" value="'.$nom.'"></input>
+                  <input type="submit" style="display: none;" />
+                 </form>';
+               }
 
          $queryRating = $db->query('SELECT * FROM rating where nom like "'.$nom.'"');
          while($rowRating = $queryRating->fetch_assoc()){
-           $username = $rowRating['cuid'];
+           $cuidRating = $rowRating['cuid'];
            $queryUsername = $db->query('SELECT * FROM user where cuid like "'.$rowRating['cuid'].'"');
            $rowUsername = $queryUsername->fetch_assoc();
            $username = $rowUsername['prenom']." ".$rowUsername['nom'];
@@ -251,8 +279,9 @@ if (!$_SESSION["cuid"]) {
            }
           echo '</span>
                      <br>
-                     '.$commentaire.'
-                   </p>
+                     '.$commentaire;
+                     if($cuidRating==$_SESSION['cuid']) echo '<span style="float:right"><a href="delRating.php/?cuid='.$cuidRating.'&nom='.$nom.'" class="button is-success is-modify"><i class="fas fa-trash-alt"></i></a></span>';
+                   echo '</p>
                  </div>
                </div>
              </article>
@@ -311,7 +340,7 @@ if (!$_SESSION["cuid"]) {
         <p><i class="fas fa-plus"></i>&nbsp;&nbsp;Ajouter un restaurant</p>
        </div>
        <form id="form-resto" method="post" onsubmit="return false" action="addResto.php">
-         <div class="columns">
+         <div class="columns" style="margin:auto">
            <div class="column">
              <div class="field">
               <label style="margin-top:15px" class="label">Nom*</label>
@@ -326,9 +355,9 @@ if (!$_SESSION["cuid"]) {
              </div>
            </div>
            <div class="field">
-            <label class="label">Latitude*</label>
+            <label class="label">Longitude*</label>
             <div class="control">
-              <input id="y" class="input" type="text" placeholder="y" tabindex="5" name="y">
+              <input id="x" class="input" type="text" placeholder="x" tabindex="5" name="x">
             </div>
           </div>
            </div>
@@ -340,18 +369,23 @@ if (!$_SESSION["cuid"]) {
               </div>
             </div>
             <div class="field">
-             <label class="label">Longitude*</label>
+             <label class="label">Téléphone</label>
              <div class="control">
-               <input id="x" class="input" type="text" placeholder="x" tabindex="4" name="x">
+               <input id="tel" class="input" type="text" placeholder="** ** ** ** **" tabindex="4" name="tel">
              </div>
            </div>
-           <div class="field is-grouped" style="display:block;margin:auto">
+           <div class="field">
+            <label class="label">Latitude*</label>
             <div class="control">
-              <label class="label">Valider</label>
-              <button id="submit-button" type="submit" name="submit" class="button is-link is-orange"><i class="fas fa-plus"></i>&nbsp;&nbsp;Ajouter le restaurant</button>
+              <input id="y" class="input" type="text" placeholder="y" tabindex="6" name="y">
             </div>
-           </div>
+          </div>
          </div>
+       </div>
+       <div class="field is-grouped" style="display:block;margin:auto;margin-top:20px">
+        <div class="control">
+          <button id="submit-button" type="submit" name="submit" class="button is-link is-orange"><i class="fas fa-plus"></i>&nbsp;&nbsp;Ajouter le restaurant</button>
+        </div>
        </div>
        </form>
      </div>
