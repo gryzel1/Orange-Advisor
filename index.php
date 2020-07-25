@@ -2,7 +2,7 @@
 $db -> set_charset("utf8");
 
 if(isset($_POST['cuid'])){
-  $cuid = $_POST['cuid'];
+  $cuid = strtolower($_POST['cuid']);
   $passwd = $_POST['passwd'];
 
   $queryLogin = $db->query("SELECT * FROM user WHERE cuid LIKE '".$cuid."';");
@@ -259,9 +259,9 @@ if (!$_SESSION["cuid"]) {
 
          $queryRating = $db->query('SELECT * FROM rating where nom like "'.$nom.'"');
          while($rowRating = $queryRating->fetch_assoc()){
-           $cuidRating = $rowRating['cuid'];
            $queryUsername = $db->query('SELECT * FROM user where cuid like "'.$rowRating['cuid'].'"');
            $rowUsername = $queryUsername->fetch_assoc();
+           $cuidRating = $rowUsername['cuid'];
            $username = $rowUsername['prenom']." ".$rowUsername['nom'];
            $note = $rowRating['note'];
            $commentaire = $rowRating['commentaire'];
